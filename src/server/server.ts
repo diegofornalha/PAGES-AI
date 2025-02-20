@@ -4,6 +4,9 @@ import { Server } from 'socket.io';
 import { spawn, exec } from 'child_process';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
+import { watch } from 'fs';
+import { homedir } from 'os';
+import { join } from 'path';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -23,17 +26,12 @@ tell application "Cursor"
   activate
 end tell
 
-delay 1
-
 tell application "System Events"
   tell process "Cursor"
-    -- Garante que o Cursor está em primeiro plano
     set frontmost to true
-    delay 0.5
-    
-    -- Abre o Composer usando Command+/
+    delay 0.1
     keystroke "/" using command down
-    delay 1
+    delay 0.1
   end tell
 end tell
 `;
@@ -73,31 +71,60 @@ async function runAppleScript(script: string): Promise<boolean> {
   });
 }
 
+// Monitora mudanças no diretório do Cursor
+function watchCursorOutput(socket: any) {
+  const cursorDir = join(homedir(), 'Library/Application Support/Cursor/Session Logs');
+  
+  try {
+    const watcher = watch(cursorDir, { recursive: true }, async (eventType, filename) => {
+      if (filename && filename.endsWith('.log')) {
+        // Lê o conteúdo do arquivo de log em tempo real
+        const logPath = join(cursorDir, filename);
+        const tailProcess = spawn('tail', ['-f', logPath]);
+
+        tailProcess.stdout.on('data', (data: Buffer) => {
+          const lines = data.toString().split('\n');
+          lines.forEach((line: string) => {
+            if (line.trim()) {
+              socket.emit('command-output', line);
+            }
+          });
+        });
+
+        socket.on('disconnect', () => {
+          tailProcess.kill();
+        });
+      }
+    });
+
+    socket.on('disconnect', () => {
+      watcher.close();
+    });
+  } catch (error) {
+    console.error('Erro ao monitorar diretório do Cursor:', error);
+  }
+}
+
 // Gerenciamento de conexões WebSocket
 io.on('connection', async (socket) => {
   console.log('Cliente conectado');
 
-  // Verifica e envia status inicial
-  const isCursorAvailable = await checkCursorAvailability();
-  const isComposerAvailable = await checkComposerAvailability();
-  
-  socket.emit('status-update', {
-    cursor: isCursorAvailable,
-    composer: isComposerAvailable
-  });
+  // Verifica status inicial
+  const initialStatus = {
+    cursor: await checkCursorAvailability(),
+    composer: true
+  };
+  socket.emit('status-update', initialStatus);
 
-  // Verifica status periodicamente
+  // Configura intervalo para verificar status
   const statusInterval = setInterval(async () => {
-    const cursorStatus = await checkCursorAvailability();
-    const composerStatus = await checkComposerAvailability();
-    
-    socket.emit('status-update', {
-      cursor: cursorStatus,
-      composer: composerStatus
-    });
+    const status = {
+      cursor: await checkCursorAvailability(),
+      composer: true
+    };
+    socket.emit('status-update', status);
   }, 5000);
 
-  // Recebe comandos do cliente
   socket.on('execute-command', async (command: string) => {
     try {
       // Verifica se o Cursor está disponível
@@ -108,47 +135,41 @@ io.on('connection', async (socket) => {
 
       console.log(`Executando comando: ${command}`);
 
-      // Primeiro, ativa o Cursor e prepara o Composer
-      const activated = await runAppleScript(activateScript);
-      if (!activated) {
-        throw new Error('Não foi possível ativar o Cursor ou o Composer');
+      // Ativa o Cursor com retry
+      let activated = false;
+      for (let i = 0; i < 3; i++) {
+        activated = await runAppleScript(activateScript);
+        if (activated) break;
+        await new Promise(resolve => setTimeout(resolve, 500));
       }
 
-      // Agora envia o comando
+      if (!activated) {
+        throw new Error('Não foi possível ativar o Cursor. Por favor, tente novamente ou reinicie a aplicação.');
+      }
+
+      // Pequeno delay para garantir que o Cursor está pronto
+      await new Promise(resolve => setTimeout(resolve, 300));
+
+      // Envia o comando com escape characters
+      const escapedCommand = command.replace(/["\\]/g, '\\$&');
       const sendCommandScript = `
 tell application "System Events"
   tell process "Cursor"
-    delay 0.5
-    -- Envia o comando
-    keystroke "${command}"
-    delay 0.5
+    delay 0.1
+    keystroke "${escapedCommand}"
+    delay 0.1
     key code 36 -- Enter key
-    delay 0.5
   end tell
-end tell
-      `;
+end tell`;
 
       const commandSent = await runAppleScript(sendCommandScript);
       if (!commandSent) {
-        throw new Error('Não foi possível enviar o comando');
+        throw new Error('Não foi possível enviar o comando. Por favor, verifique se o Cursor está respondendo.');
       }
 
+      // Emite o output
       socket.emit('command-output', 'Comando enviado para o Composer');
-      
-      // Aguarda a resposta do Composer
-      let checkInterval = setInterval(async () => {
-        const composerStatus = await checkComposerAvailability();
-        if (!composerStatus) {
-          clearInterval(checkInterval);
-          socket.emit('command-complete', 0);
-        }
-      }, 1000);
-
-      // Timeout após 30 segundos
-      setTimeout(() => {
-        clearInterval(checkInterval);
-        socket.emit('command-complete', 0);
-      }, 30000);
+      socket.emit('command-complete', 0);
 
     } catch (error: any) {
       console.error('Erro ao executar comando:', error);
