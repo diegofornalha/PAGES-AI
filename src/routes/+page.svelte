@@ -113,80 +113,112 @@
   }
 </script>
 
-<div class="min-h-screen bg-base-100">
+<div class="flex flex-col min-h-screen bg-black text-white">
   <!-- Elementos para leitores de tela -->
   <div class="sr-only" role="status" aria-live="polite" id="status-announcer"></div>
   <div class="sr-only" role="status" aria-live="polite" id="output-announcer"></div>
   <div class="sr-only" role="alert" id="error-announcer"></div>
 
-  <header class="navbar bg-base-200 p-2 md:p-4" role="banner">
-    <div class="flex-1">
-      <a href="/" class="btn btn-ghost text-lg md:text-xl">Cursor Composer</a>
-    </div>
-    <div class="flex flex-col sm:flex-row gap-1 sm:gap-2">
+  <!-- Header -->
+  <header class="flex items-center justify-between py-4 px-6 border-b border-neutral-800/50">
+    <a href="/" class="text-2xl md:text-3xl font-medium">
+      composer web
+    </a>
+    <div class="flex items-center gap-2">
       <div class="tooltip tooltip-bottom" data-tip="Status do Cursor">
-        <span class={`badge badge-sm md:badge-md ${cursorAvailable ? 'badge-success' : 'badge-error'}`} role="status" aria-label="Status do Cursor">
+        <span class={`inline-flex items-center px-3 py-1 text-sm font-medium rounded-full ${cursorAvailable ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'}`}>
           Cursor: {cursorAvailable ? 'Disponível' : 'Indisponível'}
         </span>
       </div>
       <div class="tooltip tooltip-bottom" data-tip="Status do Composer">
-        <span class={`badge badge-sm md:badge-md ${composerAvailable ? 'badge-success' : 'badge-error'}`} role="status" aria-label="Status do Composer">
+        <span class={`inline-flex items-center px-3 py-1 text-sm font-medium rounded-full ${composerAvailable ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'}`}>
           Composer: {composerAvailable ? 'Disponível' : 'Indisponível'}
         </span>
       </div>
       <div class="tooltip tooltip-bottom" data-tip="Status da Conexão">
-        <span class={`badge badge-sm md:badge-md ${isConnected ? 'badge-success' : 'badge-error'}`} role="status" aria-label="Status da Conexão">
+        <span class={`inline-flex items-center px-3 py-1 text-sm font-medium rounded-full ${isConnected ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'}`}>
           {isConnected ? 'Conectado' : 'Desconectado'}
         </span>
       </div>
     </div>
   </header>
 
-  <main class="container mx-auto px-2 sm:px-4 py-2 sm:py-4" role="main">
-    <div class="form-control w-full max-w-4xl mx-auto mb-2 sm:mb-4">
-      <label for="command-input" class="sr-only">Digite um comando do Composer</label>
-      <div class="flex gap-2">
-        <input
-          id="command-input"
-          type="text"
-          bind:value={command}
-          placeholder="Digite um comando do Composer..."
-          class="input input-bordered flex-1 text-sm sm:text-base min-w-0"
-          on:keydown={(e) => e.key === 'Enter' && executeCommand()}
-          aria-label="Campo de comando do Composer"
-          aria-describedby="command-help"
-        />
-        <button 
-          class="btn btn-success btn-sm sm:btn-md min-w-[100px] sm:min-w-[120px] font-semibold" 
-          on:click={executeCommand}
-          disabled={isLoading || !isConnected || !cursorAvailable || !composerAvailable}
-          aria-busy={isLoading}
-        >
-          {#if isLoading}
-            <span class="loading loading-spinner loading-sm sm:loading-md" aria-hidden="true"></span>
-            <span class="hidden sm:inline">Executando...</span>
-            <span class="sm:hidden">...</span>
-          {:else}
-            <span class="hidden sm:inline">Executar</span>
-            <span class="sm:hidden">▶</span>
-          {/if}
-        </button>
-      </div>
-      <div id="command-help" class="sr-only">
-        Pressione Enter para executar o comando
-      </div>
-    </div>
+  <!-- Main -->
+  <main class="flex-1 container mx-auto px-6 py-8">
+    <div class="max-w-[1200px] mx-auto">
+      <div class="glimmer-card bg-neutral-900 rounded-xl border border-neutral-800/80">
+        <div class="flex flex-col md:flex-row h-auto md:h-[600px]">
+          <!-- Input Section -->
+          <div class="w-full md:w-1/2 md:border-r border-neutral-800 p-6 flex flex-col">
+            <div class="mb-6">
+              <label class="block text-sm font-medium text-neutral-400 mb-2">O que o Cursor deve fazer?</label>
+              <div class="relative">
+                <input
+                  type="text"
+                  bind:value={command}
+                  placeholder="Descreva o que você quer construir..."
+                  class="w-full px-4 py-3 bg-neutral-800 border border-neutral-700 rounded-lg text-white placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500/30"
+                  on:keydown={(e) => e.key === 'Enter' && executeCommand()}
+                />
+                <button 
+                  class="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-green-500/10 rounded-lg text-green-400 hover:bg-green-500/20 transition-colors"
+                  on:click={executeCommand}
+                  disabled={isLoading || !isConnected || !cursorAvailable || !composerAvailable}
+                >
+                  {#if isLoading}
+                    <span class="loading loading-spinner loading-sm"></span>
+                  {:else}
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M22 2L11 13"/>
+                      <path d="M22 2L15 22L11 13L2 9L22 2Z"/>
+                    </svg>
+                  {/if}
+                </button>
+              </div>
+            </div>
+          </div>
 
-    <div class="card bg-base-200 shadow-xl max-w-4xl mx-auto">
-      <div class="card-body p-2 sm:p-4">
-        <h2 class="card-title text-lg sm:text-xl mb-2">Output</h2>
-        <pre 
-          class="bg-base-300 p-2 sm:p-4 rounded-lg whitespace-pre-wrap font-mono text-xs sm:text-sm overflow-auto max-h-[50vh] sm:max-h-[60vh]"
-          role="log"
-          aria-label="Saída do comando"
-          aria-live="polite"
-        >{output}</pre>
+          <!-- Output Section -->
+          <div class="w-full md:w-1/2 p-6 flex flex-col">
+            <h2 class="text-sm font-medium text-neutral-400 mb-4">Output</h2>
+            <pre 
+              class="flex-1 bg-neutral-800 p-4 rounded-lg font-mono text-sm text-neutral-300 overflow-auto whitespace-pre-wrap"
+              role="log"
+              aria-label="Saída do comando"
+              aria-live="polite"
+            >{output}</pre>
+          </div>
+        </div>
       </div>
     </div>
   </main>
 </div>
+
+<style>
+  @keyframes shimmer {
+    0% { background-position: 0% 0; }
+    100% { background-position: 200% 0; }
+  }
+
+  .glimmer-card {
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .glimmer-card::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(236, 72, 153, 0.03),
+      rgba(236, 72, 153, 0.06),
+      rgba(236, 72, 153, 0.03),
+      transparent
+    );
+    background-size: 200% 100%;
+    animation: shimmer 8s ease-in-out infinite;
+    pointer-events: none;
+  }
+</style>

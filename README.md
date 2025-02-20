@@ -1,58 +1,91 @@
-# create-svelte
+# PAGES AI
 
-Everything you need to build a Svelte library, powered by [`create-svelte`](https://github.com/sveltejs/kit/tree/main/packages/create-svelte).
+Este é um projeto composto por duas aplicações:
 
-Read more about creating a library [in the docs](https://svelte.dev/docs/kit/packaging).
+## 1. Cursor Composer (Svelte)
+Interface de controle para execução de comandos do Composer através do Cursor IDE.
 
-## Creating a project
+### Tecnologias
+- SvelteKit
+- Socket.IO
+- TailwindCSS
+- DaisyUI
 
-If you're seeing this, you've probably already done this step. Congrats!
+### Porta
+- Frontend: http://localhost:5173
+- Backend: http://localhost:3000
 
+### Comandos
 ```bash
-# create a new project in the current directory
-npx sv create
+# Instalar dependências
+pnpm install
 
-# create a new project in my-app
-npx sv create my-app
+# Iniciar em modo desenvolvimento
+pnpm run dev
+
+# Construir para produção
+pnpm run build
 ```
 
-## Developing
+## 2. Landing Page (React/Next.js)
+Landing page gerenciada através do Cursor Composer.
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+### Tecnologias
+- Next.js
+- React
+- TailwindCSS
 
+### Porta
+- http://localhost:3000
+
+### Comandos
 ```bash
+# Instalar dependências
+npm install
+# ou
+yarn install
+# ou
+pnpm install
+
+# Iniciar em modo desenvolvimento
 npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
+# ou
+yarn dev
+# ou
+pnpm dev
 ```
 
-Everything inside `src/lib` is part of your library, everything inside `src/routes` can be used as a showcase or preview app.
+## Estrutura do Projeto
+```
+/
+├── src/                    # Código fonte do Cursor Composer (Svelte)
+│   ├── routes/            # Rotas do SvelteKit
+│   ├── server/            # Servidor Socket.IO
+│   └── app.css           # Estilos globais
+│
+└── landingpage/           # Código fonte da Landing Page (React)
+    ├── app/              # Rotas e componentes Next.js
+    ├── components/       # Componentes React
+    └── public/          # Arquivos estáticos
+```
 
-## Building
+## Como Usar
 
-To build your library:
-
+1. Inicie o Cursor Composer:
 ```bash
-npm run package
+cd /
+pnpm run dev
 ```
 
-To create a production version of your showcase app:
-
+2. Em outro terminal, inicie a Landing Page:
 ```bash
-npm run build
+cd landingpage
+pnpm run dev
 ```
 
-You can preview the production build with `npm run preview`.
+3. Abra o Cursor IDE e use o Cursor Composer em http://localhost:5173 para gerenciar sua Landing Page.
 
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
-
-## Publishing
-
-Go into the `package.json` and give your package the desired name through the `"name"` option. Also consider adding a `"license"` field and point it to a `LICENSE` file which you can create from a template (one popular option is the [MIT license](https://opensource.org/license/mit/)).
-
-To publish your library to [npm](https://www.npmjs.com):
-
-```bash
-npm publish
-```
+## Requisitos
+- Node.js 20.x ou superior
+- pnpm (recomendado) ou npm
+- Cursor IDE instalado e configurado

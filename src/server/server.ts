@@ -23,15 +23,18 @@ tell application "Cursor"
   activate
 end tell
 
--- Espera até que o Cursor esteja em primeiro plano
-repeat until application "Cursor" is frontmost
-  delay 0.1
-end repeat
+delay 1
 
--- Pressiona Command+I para abrir o Composer
 tell application "System Events"
-  keystroke "i" using command down
-  delay 0.2
+  tell process "Cursor"
+    -- Garante que o Cursor está em primeiro plano
+    set frontmost to true
+    delay 0.5
+    
+    -- Abre o Composer usando Command+/
+    keystroke "/" using command down
+    delay 1
+  end tell
 end tell
 `;
 
@@ -114,9 +117,14 @@ io.on('connection', async (socket) => {
       // Agora envia o comando
       const sendCommandScript = `
 tell application "System Events"
-  keystroke "${command}"
-  delay 0.1
-  key code 36 -- Enter key
+  tell process "Cursor"
+    delay 0.5
+    -- Envia o comando
+    keystroke "${command}"
+    delay 0.5
+    key code 36 -- Enter key
+    delay 0.5
+  end tell
 end tell
       `;
 
@@ -126,10 +134,26 @@ end tell
       }
 
       socket.emit('command-output', 'Comando enviado para o Composer');
+      
+      // Aguarda a resposta do Composer
+      let checkInterval = setInterval(async () => {
+        const composerStatus = await checkComposerAvailability();
+        if (!composerStatus) {
+          clearInterval(checkInterval);
+          socket.emit('command-complete', 0);
+        }
+      }, 1000);
+
+      // Timeout após 30 segundos
+      setTimeout(() => {
+        clearInterval(checkInterval);
+        socket.emit('command-complete', 0);
+      }, 30000);
 
     } catch (error: any) {
       console.error('Erro ao executar comando:', error);
       socket.emit('command-error', error.message);
+      socket.emit('command-complete', 1);
     }
   });
 
