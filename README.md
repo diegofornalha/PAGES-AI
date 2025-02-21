@@ -1,117 +1,71 @@
-# PAGES AI
+# Browser Use - Automação com Python e LLMs
 
-Este é um projeto composto por duas aplicações:
+Este projeto demonstra a automação de navegador usando Python, Playwright e diferentes modelos de LLM (Language Learning Models).
 
-## 1. Cursor Composer (Svelte)
-Interface de controle para execução de comandos do Composer através do Cursor IDE.
+## Ambiente de Desenvolvimento
 
-### Tecnologias
-- SvelteKit
-- Socket.IO
-- TailwindCSS
-- DaisyUI
+### Requisitos do Sistema
+- Python 3.9+
+- pip3
+- Navegador Chromium (instalado automaticamente pelo Playwright)
 
-### Porta
-- Frontend: http://localhost:5173
-- Backend: http://localhost:3000
+### Configuração do Ambiente Virtual
+Para evitar conflitos e garantir um ambiente isolado, siga estes passos:
 
-### Comandos
+1. Criar um novo ambiente virtual:
 ```bash
-# Instalar dependências
-pnpm install
-
-# Iniciar em modo desenvolvimento
-pnpm run dev
-
-# Construir para produção
-pnpm run build
+python -m venv .venv_new
+source .venv_new/bin/activate
 ```
 
-## 2. Landing Page (React/Next.js)
-Landing page gerenciada através do Cursor Composer.
-
-### Tecnologias
-- Next.js
-- React
-- TailwindCSS
-
-### Porta
-- http://localhost:3000
-
-### Comandos
+2. Instalar as dependências necessárias:
 ```bash
-# Instalar dependências
-npm install
-# ou
-yarn install
-# ou
-pnpm install
-
-# Iniciar em modo desenvolvimento
-npm run dev
-# ou
-yarn dev
-# ou
-pnpm dev
+pip3 install python-dotenv langchain-anthropic playwright
+playwright install chromium
 ```
+
+### Dependências Principais
+- python-dotenv: Para gerenciamento de variáveis de ambiente
+- langchain-anthropic: Para integração com o modelo Claude da Anthropic
+- playwright: Para automação do navegador
+
+## Aprendizados Importantes
+
+1. **Ambiente Virtual**: 
+   - É crucial usar um ambiente virtual Python limpo para evitar conflitos de dependências
+   - O uso do `.venv_new` ajudou a resolver problemas de importação de módulos
+
+2. **Instalação de Dependências**:
+   - Usar `pip3` em vez de `pip` pode resolver problemas de versão do Python
+   - Instalar as dependências uma a uma pode ajudar a identificar problemas específicos
+
+3. **Playwright**:
+   - Após instalar o pacote, é necessário instalar o navegador com `playwright install chromium`
+   - O modo headless pode ser controlado no lançamento do navegador
+
+4. **Variáveis de Ambiente**:
+   - O arquivo `.env` deve estar na raiz do projeto
+   - Necessário para armazenar chaves de API de forma segura (ex: ANTHROPIC_API_KEY)
 
 ## Estrutura do Projeto
-```
-/
-├── src/                    # Código fonte do Cursor Composer (Svelte)
-│   ├── routes/            # Rotas do SvelteKit
-│   ├── server/            # Servidor Socket.IO
-│   └── app.css           # Estilos globais
-│
-└── landingpage/           # Código fonte da Landing Page (React)
-    ├── app/              # Rotas e componentes Next.js
-    ├── components/       # Componentes React
-    └── public/          # Arquivos estáticos
-```
+- `test_example.py`: Implementação principal com suporte a múltiplos LLMs
+- `anthropic_test.py`: Versão simplificada usando apenas o modelo Anthropic
+- `.env`: Arquivo para variáveis de ambiente (não versionado)
 
-## Como Usar
+## Solução de Problemas
 
-1. Certifique-se que o Cursor IDE está aberto e em foco antes de iniciar.
+1. **ModuleNotFoundError: No module named 'dotenv'**
+   - Solução: Instalar python-dotenv usando pip3
+   ```bash
+   pip3 install python-dotenv
+   ```
 
-2. Inicie todo o ambiente de desenvolvimento com um único comando:
-```bash
-pnpm run start
-```
-Este comando irá:
-- Iniciar o frontend Svelte na porta 5173
-- Iniciar o servidor Socket.IO na porta 3000
-- Executar ambos em paralelo
+2. **Problemas com Importações**
+   - Solução: Usar um ambiente virtual novo e limpo
+   - Garantir que todas as dependências estão instaladas corretamente
 
-3. Acesse o Cursor Composer em http://localhost:5173
-
-### Solução de Problemas
-
-Se você ver a mensagem "O Cursor não está disponível":
-
-1. Verifique se o Cursor IDE está:
-   - Instalado corretamente
-   - Aberto e em foco
-   - Rodando sem erros
-
-2. Tente as seguintes soluções:
-   - Atualize a página do Composer IDE (http://localhost:5173)
-   - Reinicie o servidor com `pnpm run start`
-   - Verifique se não há outros processos usando as portas 3000 ou 5173
-
-3. Para verificar se os serviços estão rodando corretamente:
-```bash
-# Verificar portas em uso
-lsof -i :5173,3000
-```
-
-### Testando a Instalação
-
-Para verificar se tudo está funcionando:
-1. Abra o Cursor Composer (http://localhost:5173)
-2. Digite um comando simples como "criar um arquivo teste.txt"
-3. O sistema deve reconhecer o Cursor e executar o comando
-
-## Requisitos
-- Node.js 20.x ou superior
-- pnpm (recomendado) ou npm
-- Cursor IDE instalado e configurado
+3. **Navegador não Encontrado**
+   - Solução: Instalar o Chromium via Playwright
+   ```bash
+   playwright install chromium
+   ```
