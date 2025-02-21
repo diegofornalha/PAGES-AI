@@ -71,19 +71,45 @@ pnpm dev
 
 ## Como Usar
 
-1. Inicie o Cursor Composer:
+1. Certifique-se que o Cursor IDE está aberto e em foco antes de iniciar.
+
+2. Inicie todo o ambiente de desenvolvimento com um único comando:
 ```bash
-cd /
-pnpm run dev
+pnpm run start
+```
+Este comando irá:
+- Iniciar o frontend Svelte na porta 5173
+- Iniciar o servidor Socket.IO na porta 3000
+- Executar ambos em paralelo
+
+3. Acesse o Cursor Composer em http://localhost:5173
+
+### Solução de Problemas
+
+Se você ver a mensagem "O Cursor não está disponível":
+
+1. Verifique se o Cursor IDE está:
+   - Instalado corretamente
+   - Aberto e em foco
+   - Rodando sem erros
+
+2. Tente as seguintes soluções:
+   - Atualize a página do Composer IDE (http://localhost:5173)
+   - Reinicie o servidor com `pnpm run start`
+   - Verifique se não há outros processos usando as portas 3000 ou 5173
+
+3. Para verificar se os serviços estão rodando corretamente:
+```bash
+# Verificar portas em uso
+lsof -i :5173,3000
 ```
 
-2. Em outro terminal, inicie a Landing Page:
-```bash
-cd landingpage
-pnpm run dev
-```
+### Testando a Instalação
 
-3. Abra o Cursor IDE e use o Cursor Composer em http://localhost:5173 para gerenciar sua Landing Page.
+Para verificar se tudo está funcionando:
+1. Abra o Cursor Composer (http://localhost:5173)
+2. Digite um comando simples como "criar um arquivo teste.txt"
+3. O sistema deve reconhecer o Cursor e executar o comando
 
 ## Requisitos
 - Node.js 20.x ou superior
